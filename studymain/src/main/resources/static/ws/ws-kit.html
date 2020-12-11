@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>WebSocket</title>
+
+        <link href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+
+        <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
+        <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="./js/jquery.cookie.js"></script>
+        <script type="text/javascript" src="./js/sockjs-0.3.4.min.js"></script>
+        <script type="text/javascript" src="./js/ws.js"></script>
+        <script type="text/javascript" src="./js/ws-kit.js"></script>
+
+        <style>
+            ul.nav-tabs{
+                width: 140px;
+                margin-top: 20px;
+                border-radius: 4px;
+                border: 1px solid #ddd;
+                box-shadow: 0 1px 4px rgba(0, 0, 0, 0.067);
+            }
+            ul.nav-tabs li{
+                margin: 0;
+                border-top: 1px solid #ddd;
+            }
+            ul.nav-tabs li:first-child{
+                border-top: none;
+            }
+            ul.nav-tabs li a{
+                margin: 0;
+                padding: 8px 16px;
+                border-radius: 0;
+            }
+            ul.nav-tabs li.active a, ul.nav-tabs li.active a:hover{
+                color: #fff;
+                background: #0088cc;
+                border: 1px solid #0088cc;
+            }
+            ul.nav-tabs li:first-child a{
+                border-radius: 4px 4px 0 0;
+            }
+            ul.nav-tabs li:last-child a{
+                border-radius: 0 0 4px 4px;
+            }
+            ul.nav-tabs.affix{
+                top: 30px; /* Set the top position of pinned element */
+            }
+        </style>
+    </head>
+    <body>
+
+        <nav id="head" class="navbar navbar-default" role="navigation">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <div class="navbar-brand" href="#">WebSocket联调测试工具</div>
+                </div>
+            </div>
+        </nav>
+
+        <div style="margin: 20px;">
+            <div class="left-block" style="width: 30%; float:left;" >
+                <div>
+                    <label class="radio-inline">
+                        <input type="radio" class="operations" name="operations" id="heartbeat-radio" value="heartbeat" checked> 心跳
+                    </label>
+                    <label class="radio-inline">
+                        <input type="radio" class="operations" name="operations" id="immediate-msg-radio"  value="immediate-msg"> 消息收发
+                    </label>
+                    <label class="radio-inline">
+                        <input type="radio" class="operations" name="operations" id="ack-radio"  value="ack"> 回执
+                    </label>
+                    <label class="radio-inline">
+                        <input type="radio" class="operations" name="operations" id="invitation-radio"  value="invitation"> 邀评
+                    </label>
+                </div>
+
+                <hr/>
+
+                <div>
+                    <!-- 心跳 -->
+                    <form id="heartbeat" class="form-horizontal" role="form">
+                        <div class="form-group">
+                            <label for="heartbeat-_v" class="col-sm-2 control-label">_v</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="heartbeat-_v" value="1.1" readonly style="background-color: #DCDCDC"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="heartbeat-platform" class="col-sm-2 control-label">platform</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="heartbeat-platform" value="GOLD_SHOP" readonly style="background-color: #DCDCDC"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="heartbeat-type" class="col-sm-2 control-label">type</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="heartbeat-type" value="1001" readonly style="background-color: #DCDCDC"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-offset-2 col-sm-10">
+                                <button type="submit" class="btn btn-default" onclick="sendMessage('heartbeat')">发送</button>
+                            </div>
+                        </div>
+                    </form>
+                    <!-- 消息收发 -->
+                    <form id="immediate-msg" class="form-horizontal" role="form" style="display: none;">
+                        <div class="form-group">
+                            <label for="immediate-msg-msgId" class="col-sm-2 control-label">msgId</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="immediate-msg-msgId" readonly style="background-color: #DCDCDC"/>
+                            </div>
+                            <a href="#" onclick="genMsgId('immediate-msg')">更新</a>
+                        </div>
+                        <div class="form-group">
+                            <label for="immediate-msg-_v" class="col-sm-2 control-label">_v</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="immediate-msg-_v" value="1.1" readonly style="background-color: #DCDCDC"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="immediate-msg-platform" class="col-sm-2 control-label">platform</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="immediate-msg-platform" value="GOLD_SHOP" readonly style="background-color: #DCDCDC"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="immediate-msg-type" class="col-sm-2 control-label">type</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="immediate-msg-type" value="01" readonly style="background-color: #DCDCDC"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="immediate-msg-companyId" class="col-sm-2 control-label">companyId</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="immediate-msg-companyId" placeholder="公司ID"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="immediate-msg-dialogId" class="col-sm-2 control-label">dialogId</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="immediate-msg-dialogId" placeholder="会话ID"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="immediate-msg-fromUserId" class="col-sm-2 control-label">fromUserId</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="immediate-msg-fromUserId" placeholder="fromUserId"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="immediate-msg-fromUserName" class="col-sm-2 control-label">fromUserName</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="immediate-msg-fromUserName" placeholder="fromUserName"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="immediate-msg-toUserId" class="col-sm-2 control-label">toUserId</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="immediate-msg-toUserId" placeholder="toUserId"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="immediate-msg-toUserName" class="col-sm-2 control-label">toUserName</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="immediate-msg-toUserName" placeholder="toUserName"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="immediate-msg-content" class="col-sm-2 control-label">content</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="immediate-msg-content" placeholder="content"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="immediate-msg-contentType" class="col-sm-2 control-label">contentType</label>
+                            <div class="col-sm-6">
+                                <select id="immediate-msg-contentType" class="form-control">
+                                    <option value="TEXT" selected="selected">文本</option>
+                                    <option value="IMG">图片</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-offset-2 col-sm-10">
+                                <button type="submit" class="btn btn-default" onclick="sendMessage('immediate-msg')">发送</button>
+                            </div>
+                        </div>
+                    </form>
+                    <!-- 回执 -->
+                    <form id="ack" class="form-horizontal" role="form" style="display: none;">
+                        <div class="form-group">
+                            <label for="ack-_v" class="col-sm-2 control-label">_v</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="ack-_v" value="1.1" readonly style="background-color: #DCDCDC"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="ack-platform" class="col-sm-2 control-label">platform</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="ack-platform" value="GOLD_SHOP" readonly style="background-color: #DCDCDC"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="ack-type" class="col-sm-2 control-label">type</label>
+                            <div class="col-sm-6">
+                                <select id="ack-type" class="form-control">
+                                    <option value="1003" selected="selected">已接收</option>
+                                    <option value="1002">已读</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="ack-msgIdList" class="col-sm-2 control-label">msgIdList</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="ack-msgIdList" value="" placeholder="消息ID集合，例 100001,100002,100003"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-offset-2 col-sm-10">
+                                <button type="submit" class="btn btn-default" onclick="sendMessage('ack')">发送</button>
+                            </div>
+                        </div>
+                    </form>
+                    <!-- 邀评 -->
+                    <form id="invitation" class="form-horizontal" role="form" style="display: none;">
+                        <div class="form-group">
+                            <label for="invitation-msgId" class="col-sm-2 control-label">msgId</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="invitation-msgId" readonly style="background-color: #DCDCDC"/>
+                            </div>
+                            <a href="#" onclick="genMsgId('invitation')">更新</a>
+                        </div>
+                        <div class="form-group">
+                            <label for="invitation-_v" class="col-sm-2 control-label">_v</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="invitation-_v" value="1.1" readonly style="background-color: #DCDCDC"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="invitation-platform" class="col-sm-2 control-label">platform</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="invitation-platform" value="GOLD_SHOP" readonly style="background-color: #DCDCDC"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="invitation-type" class="col-sm-2 control-label">type</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="invitation-type" value="31" readonly style="background-color: #DCDCDC"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="invitation-companyId" class="col-sm-2 control-label">companyId</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="invitation-companyId" placeholder="公司ID"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="invitation-dialogId" class="col-sm-2 control-label">dialogId</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="invitation-dialogId" placeholder="会话ID"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="invitation-fromUserId" class="col-sm-2 control-label">fromUserId</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="invitation-fromUserId" placeholder="fromUserId"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="invitation-fromUserName" class="col-sm-2 control-label">fromUserName</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="invitation-fromUserName" placeholder="fromUserName"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="invitation-toUserId" class="col-sm-2 control-label">toUserId</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="invitation-toUserId" placeholder="toUserId"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="invitation-toUserName" class="col-sm-2 control-label">toUserName</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" id="invitation-toUserName" placeholder="toUserName"/>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="invitation-active" class="col-sm-2 control-label">邀评类型</label>
+                            <div class="col-sm-6">
+                                <select id="invitation-active" class="form-control">
+                                    <option value="0" selected="selected">手动邀评</option>
+                                    <option value="1">自动邀评</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-offset-2 col-sm-10">
+                                <button type="submit" class="btn btn-default" onclick="sendMessage('invitation')">发送</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="right-block" style="width: 70%; float:left;">
+                <h3>消息栏</h3>
+                <a href="#" onclick="clearMessage()">清空</a>
+                &nbsp;&nbsp;&nbsp;
+                <a href="#" id="switchOrder" onclick="switchOrder()"></a>
+                <br/>
+                <div id="message" style="width: 400px; height: 400px;"></div>
+            </div>
+        </div>
+
+        <script type="text/javascript" src="./js/ws-kit.js"></script>
+    </body>
+</html>

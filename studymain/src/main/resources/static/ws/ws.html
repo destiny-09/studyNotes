@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>WebSocket</title>
+        <script type="text/javascript" src="./js/jquery-1.7.2.min.js"></script>
+        <script type="text/javascript" src="./js/jquery.cookie.js"></script>
+        <script type="text/javascript" src="./js/sockjs-0.3.4.min.js"></script>
+        <script type="text/javascript" src="./js/ws.js"></script>
+    </head>
+    <body>
+        欢迎来到海海聊天室<br/>
+        <input id="text" type="text"/>
+        &nbsp;&nbsp;&nbsp;
+        <button onclick="sendMsg()">发送消息</button>
+        &nbsp;&nbsp;&nbsp;
+        <button onclick="closeWebSocket()">关闭ws连接</button>
+        <hr/>
+        <div id="message"></div>
+    </body>
+</html>

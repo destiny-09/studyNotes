@@ -1,0 +1,22 @@
+<html>
+<head>
+    <title>Jtalk IM</title>
+    <script src="./js/jquery-1.7.2.min.js"></script>
+    <script src="./js/im.js"></script>
+</head>
+
+<body>
+Jtalk IM<br/><hr/>
+<div class="left-block" style="width: 30%; float:left;">
+    <textarea id="text" rows="30" cols="60"></textarea>
+    <br/><br/><br/>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <button onclick="sendMsg()">send</button>
+</div>
+<div class="right-block" style="width: 65%; float:right;">
+    <a href="#" onclick="clearMessage()">clear</a>
+    <br/><br/>
+    <div id="message" style="width: 400px; height: 400px;"></div>
+</div>
+</body>
+</html>
