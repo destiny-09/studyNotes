@@ -11,7 +11,7 @@
     <properties>
         <spring-boot-version>2.2.1.RELEASE</spring-boot-version>
         <log4j2.version>2.12.1</log4j2.version>
-        <netty.version>4.1.8.Final</netty.version>
+        <netty.version>4.1.59.Final</netty.version>
         <os.detected.classifier>linux-x86_64</os.detected.classifier>
     </properties>
 
